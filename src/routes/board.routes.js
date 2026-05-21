@@ -1,4 +1,3 @@
-// src/routes/board.routes.js
 import { Router } from "express";
 import {
     createBoard,

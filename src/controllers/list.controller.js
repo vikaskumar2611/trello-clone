@@ -1,4 +1,3 @@
-// src/controllers/list.controller.js
 import { query, withTransaction } from "../database/db.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
