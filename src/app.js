@@ -37,7 +37,7 @@ app.use(cookieParser());
 // ROUTES
 
 import boardRouter from "./routes/board.routes.js";
-// import listRouter from "./routes/list.routes.js";
+ import listRouter from "./routes/list.routes.js";
 // import cardRouter from "./routes/card.routes.js";
 // import labelRouter from "./routes/label.routes.js";
 // import memberRouter from "./routes/member.routes.js";
@@ -47,7 +47,7 @@ import boardRouter from "./routes/board.routes.js";
 // import searchRouter from "./routes/search.routes.js";
 
 app.use("/api/v1/boards", boardRouter);
-// app.use("/api/v1/lists", listRouter);
+app.use("/api/v1/lists", listRouter);
 // app.use("/api/v1/cards", cardRouter);
 // app.use("/api/v1/labels", labelRouter);
 // app.use("/api/v1/members", memberRouter);
