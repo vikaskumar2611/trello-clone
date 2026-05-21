@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# Temp uploads (multer stores here before cloudinary)
+public/temp/*
+!public/temp/.gitkeep
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
