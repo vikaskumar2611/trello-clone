@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS boards (
     title            VARCHAR(200) NOT NULL,
     description      TEXT,
     background_color VARCHAR(7) DEFAULT '#0079BF',
-    -- optional cloudinary image as board background
-    background_image VARCHAR(500),
+    -- optional image as board background (URL or data URL)
+    background_image TEXT,
     is_archived      BOOLEAN NOT NULL DEFAULT FALSE,
     created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()

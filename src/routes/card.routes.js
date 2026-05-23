@@ -8,6 +8,7 @@ import {
     removeLabel,
     assignMember,
     removeMember,
+    restoreCard,
 } from "../controllers/card.controller.js";
 import { createChecklist } from "../controllers/checklist.controller.js";
 import { getComments, addComment } from "../controllers/comment.controller.js";
@@ -19,6 +20,8 @@ const router = Router();
 router.route("/:cardId").get(getCardById).put(updateCard).delete(deleteCard);
 
 router.route("/:cardId/move").put(moveCard);
+
+router.route("/:cardId/restore").put(restoreCard);
 
 // Labels
 router.route("/:cardId/labels").post(addLabel);

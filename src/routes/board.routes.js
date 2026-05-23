@@ -7,14 +7,18 @@ import {
     deleteBoard,
 } from "../controllers/board.controller.js";
 
-// Board-scoped sub-resources
-//import { createList } from "../controllers/list.controller.js";
+import { getArchivedLists } from "../controllers/list.controller.js";
+
+import { getArchivedCards } from "../controllers/card.controller.js";
 
 import {
     getBoardLabels,
     createLabel,
 } from "../controllers/label.controller.js";
-import { getBoardMembers } from "../controllers/member.controller.js";
+import {
+    getBoardMembers,
+    addBoardMember,
+} from "../controllers/member.controller.js";
 import { searchCards } from "../controllers/search.controller.js";
 
 const router = Router();
@@ -34,9 +38,12 @@ router
 router.route("/:boardId/labels").get(getBoardLabels).post(createLabel);
 
 // Members scoped under a board
-router.route("/:boardId/members").get(getBoardMembers);
+router.route("/:boardId/members").get(getBoardMembers).post(addBoardMember);
 
 // Search scoped under a board
 router.route("/:boardId/search").get(searchCards);
+
+router.route("/:boardId/archived-lists").get(getArchivedLists);
+router.route("/:boardId/archived-cards").get(getArchivedCards);
 
 export default router;

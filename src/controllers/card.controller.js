@@ -497,6 +497,73 @@ const removeMember = asyncHandler(async (req, res) => {
         );
 });
 
+// GET /api/v1/boards/:boardId/archived-cards
+const getArchivedCards = asyncHandler(async (req, res) => {
+    const { boardId } = req.params;
+
+    const result = await query(
+        `SELECT
+       c.id,
+       c.title,
+       c.description,
+       c.due_date,
+       c.cover_color,
+       c.updated_at,
+       l.id    AS list_id,
+       l.title AS list_title
+     FROM cards c
+     JOIN lists l ON l.id = c.list_id
+     WHERE l.board_id = $1
+       AND c.is_archived = TRUE
+     ORDER BY c.updated_at DESC`,
+        [boardId],
+    );
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, result.rows, "Archived cards fetched"));
+});
+
+// PUT /api/v1/cards/:cardId/restore
+const restoreCard = asyncHandler(async (req, res) => {
+    const { cardId } = req.params;
+
+    // Check if the list the card belongs to is also archived
+    // If list is archived, we cannot restore the card into it
+    const cardResult = await query(
+        `SELECT c.*, l.is_archived AS list_archived, l.title AS list_title
+     FROM cards c
+     JOIN lists l ON l.id = c.list_id
+     WHERE c.id = $1 AND c.is_archived = TRUE`,
+        [cardId],
+    );
+
+    if (!cardResult.rows[0]) {
+        throw new ApiError(404, "Archived card not found");
+    }
+
+    if (cardResult.rows[0].list_archived) {
+        throw new ApiError(
+            400,
+            `Cannot restore card - its list "${cardResult.rows[0].list_title}" is also archived. Restore the list first.`,
+        );
+    }
+
+    const result = await query(
+        `UPDATE cards
+     SET is_archived = FALSE, updated_at = NOW()
+     WHERE id = $1
+     RETURNING *`,
+        [cardId],
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, result.rows[0], "Card restored successfully"),
+        );
+});
+
 export {
     createCard,
     getCardById,
@@ -507,4 +574,6 @@ export {
     removeLabel,
     assignMember,
     removeMember,
+    restoreCard,
+    getArchivedCards,
 };

@@ -1,5 +1,6 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import { MAX_FILE_SIZE_BYTES, ALLOWED_MIME_TYPES } from "../constants.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -7,7 +8,11 @@ import { ApiError } from "../utils/ApiError.js";
 // Controller then pushes to Cloudinary and deletes local file
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, "public/temp");
+        const tempDir = path.resolve("public", "temp");
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        cb(null, tempDir);
     },
     filename: function (req, file, cb) {
         // fieldname + timestamp + original name avoids collisions

@@ -4,6 +4,7 @@ import {
     deleteList,
     moveList,
     createList,
+    restoreList,
 } from "../controllers/list.controller.js";
 
 // Cards scoped under a list
@@ -14,6 +15,8 @@ const router = Router();
 router.route("/:boardId/lists").post(createList);
 
 router.route("/:listId").put(updateList).delete(deleteList);
+
+router.route("/:listId/restore").put(restoreList);
 
 router.route("/:listId/move").put(moveList);
 

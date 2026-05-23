@@ -167,4 +167,62 @@ const moveList = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, result.rows[0], "List moved successfully"));
 });
 
-export { createList, updateList, deleteList, moveList };
+// GET /api/v1/boards/:boardId/archived-lists
+const getArchivedLists = asyncHandler(async (req, res) => {
+    const { boardId } = req.params;
+
+    const result = await query(
+        `SELECT l.*,
+       COUNT(c.id) AS card_count
+     FROM lists l
+     LEFT JOIN cards c ON c.list_id = l.id
+     WHERE l.board_id = $1 AND l.is_archived = TRUE
+     GROUP BY l.id
+     ORDER BY l.updated_at DESC`,
+        [boardId],
+    );
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, result.rows, "Archived lists fetched"));
+});
+
+// PUT /api/v1/lists/:listId/restore
+const restoreList = asyncHandler(async (req, res) => {
+    const { listId } = req.params;
+
+    const result = await query(
+        `UPDATE lists
+     SET is_archived = FALSE, updated_at = NOW()
+     WHERE id = $1 AND is_archived = TRUE
+     RETURNING *`,
+        [listId],
+    );
+
+    if (!result.rows[0]) {
+        throw new ApiError(404, "Archived list not found");
+    }
+
+    // Also restore all cards that belong to this list
+    await query(
+        `UPDATE cards
+     SET is_archived = FALSE, updated_at = NOW()
+     WHERE list_id = $1`,
+        [listId],
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, result.rows[0], "List restored successfully"),
+        );
+});
+
+export {
+    createList,
+    updateList,
+    deleteList,
+    moveList,
+    getArchivedLists,
+    restoreList,
+};
