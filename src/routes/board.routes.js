@@ -8,7 +8,7 @@ import {
 } from "../controllers/board.controller.js";
 
 // Board-scoped sub-resources
-import { createList } from "../controllers/list.controller.js";
+//import { createList } from "../controllers/list.controller.js";
 
 import {
     getBoardLabels,
@@ -28,7 +28,7 @@ router
     .delete(deleteBoard);
 
 //Lists scoped under a board
-router.route("/:boardId/lists").post(createList);
+//router.route("/:boardId/lists").post(createList);
 
 // Labels scoped under a board
 router.route("/:boardId/labels").get(getBoardLabels).post(createLabel);
