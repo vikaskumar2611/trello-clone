@@ -389,6 +389,37 @@ const deleteCard = asyncHandler(async (req, res) => {
         );
 });
 
+// DELETE /api/v1/cards/:cardId/permanent  (hard delete)
+const deleteCardPermanently = asyncHandler(async (req, res) => {
+    const { cardId } = req.params;
+
+    const currentCard = await query(
+        `SELECT c.*, l.board_id FROM cards c JOIN lists l ON l.id = c.list_id WHERE c.id = $1`,
+        [cardId],
+    );
+    if (!currentCard.rows[0]) {
+        throw new ApiError(404, "Card not found");
+    }
+
+    await withTransaction(async (client) => {
+        await client.query(`DELETE FROM cards WHERE id = $1`, [cardId]);
+
+        await client.query(
+            `INSERT INTO activities (board_id, member_id, action, data)
+       VALUES ($1, $2, 'deleted_card', $3)`,
+            [
+                currentCard.rows[0].board_id,
+                DEFAULT_MEMBER_ID,
+                JSON.stringify({ card_title: currentCard.rows[0].title }),
+            ],
+        );
+    });
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { id: cardId }, "Card deleted"));
+});
+
 // POST /api/v1/cards/:cardId/labels
 const addLabel = asyncHandler(async (req, res) => {
     const { cardId } = req.params;
@@ -570,6 +601,7 @@ export {
     updateCard,
     moveCard,
     deleteCard,
+    deleteCardPermanently,
     addLabel,
     removeLabel,
     assignMember,

@@ -1,13 +1,12 @@
 import { Router } from "express";
 import {
+    deleteListPermanently,
     updateList,
     deleteList,
     moveList,
     createList,
     restoreList,
 } from "../controllers/list.controller.js";
-
-// Cards scoped under a list
 import { createCard } from "../controllers/card.controller.js";
 
 const router = Router();
@@ -15,6 +14,7 @@ const router = Router();
 router.route("/:boardId/lists").post(createList);
 
 router.route("/:listId").put(updateList).delete(deleteList);
+router.route("/:listId/permanent").delete(deleteListPermanently);
 
 router.route("/:listId/restore").put(restoreList);
 

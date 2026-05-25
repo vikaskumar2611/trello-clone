@@ -4,6 +4,7 @@ import {
     updateCard,
     moveCard,
     deleteCard,
+    deleteCardPermanently,
     addLabel,
     removeLabel,
     assignMember,
@@ -18,6 +19,7 @@ import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 
 router.route("/:cardId").get(getCardById).put(updateCard).delete(deleteCard);
+router.route("/:cardId/permanent").delete(deleteCardPermanently);
 
 router.route("/:cardId/move").put(moveCard);
 

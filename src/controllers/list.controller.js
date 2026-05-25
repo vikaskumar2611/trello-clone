@@ -136,6 +136,37 @@ const deleteList = asyncHandler(async (req, res) => {
         );
 });
 
+// DELETE /api/v1/lists/:listId/permanent  (hard delete)
+const deleteListPermanently = asyncHandler(async (req, res) => {
+    const { listId } = req.params;
+
+    const listResult = await query(`SELECT * FROM lists WHERE id = $1`, [
+        listId,
+    ]);
+
+    if (!listResult.rows[0]) {
+        throw new ApiError(404, "List not found");
+    }
+
+    await withTransaction(async (client) => {
+        await client.query(`DELETE FROM lists WHERE id = $1`, [listId]);
+
+        await client.query(
+            `INSERT INTO activities (board_id, member_id, action, data)
+       VALUES ($1, $2, 'deleted_list', $3)`,
+            [
+                listResult.rows[0].board_id,
+                DEFAULT_MEMBER_ID,
+                JSON.stringify({ list_title: listResult.rows[0].title }),
+            ],
+        );
+    });
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { id: listId }, "List deleted"));
+});
+
 // PUT /api/v1/lists/:listId/move
 // Body: { position: float }  <- calculated by frontend using getPositionBetween
 const moveList = asyncHandler(async (req, res) => {
@@ -222,6 +253,7 @@ export {
     createList,
     updateList,
     deleteList,
+    deleteListPermanently,
     moveList,
     getArchivedLists,
     restoreList,

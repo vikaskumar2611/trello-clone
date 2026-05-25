@@ -204,32 +204,65 @@ const updateBoard = asyncHandler(async (req, res) => {
     const { boardId } = req.params;
     const { title, description, background_color, background_image } = req.body;
 
+    const hasTitle = Object.prototype.hasOwnProperty.call(req.body, "title");
+    const hasDescription = Object.prototype.hasOwnProperty.call(
+        req.body,
+        "description",
+    );
+    const hasBackgroundColor = Object.prototype.hasOwnProperty.call(
+        req.body,
+        "background_color",
+    );
+    const hasBackgroundImage = Object.prototype.hasOwnProperty.call(
+        req.body,
+        "background_image",
+    );
+
     if (
-        !title?.trim() &&
-        !description &&
-        !background_color &&
-        !background_image
+        !hasTitle &&
+        !hasDescription &&
+        !hasBackgroundColor &&
+        !hasBackgroundImage
     ) {
         throw new ApiError(400, "At least one field is required to update");
     }
 
+    if (hasTitle && !title?.trim()) {
+        throw new ApiError(400, "Board title is required");
+    }
+
+    const updates = [];
+    const values = [];
+    let idx = 1;
+
+    if (hasTitle) {
+        updates.push(`title = $${idx++}`);
+        values.push(title.trim());
+    }
+
+    if (hasDescription) {
+        updates.push(`description = $${idx++}`);
+        values.push(description?.trim() || null);
+    }
+
+    if (hasBackgroundColor) {
+        updates.push(`background_color = $${idx++}`);
+        values.push(background_color || null);
+    }
+
+    if (hasBackgroundImage) {
+        updates.push(`background_image = $${idx++}`);
+        values.push(background_image ?? null);
+    }
+
+    values.push(boardId);
+
     const result = await query(
         `UPDATE boards
-     SET
-       title            = COALESCE($1, title),
-       description      = COALESCE($2, description),
-       background_color = COALESCE($3, background_color),
-       background_image = COALESCE($4, background_image),
-       updated_at       = NOW()
-     WHERE id = $5 AND is_archived = FALSE
+     SET ${updates.join(", ")}, updated_at = NOW()
+     WHERE id = $${idx} AND is_archived = FALSE
      RETURNING *`,
-        [
-            title?.trim() || null,
-            description?.trim() || null,
-            background_color || null,
-            background_image || null,
-            boardId,
-        ],
+        values,
     );
 
     if (!result.rows[0]) {
